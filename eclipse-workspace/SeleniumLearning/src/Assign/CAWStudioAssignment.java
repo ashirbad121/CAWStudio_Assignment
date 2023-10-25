@@ -1,21 +1,21 @@
 package Assign;
 
+import java.util.List;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
-public class CAWStudioAssignment {
+public class CAWStudioUpdatedAssignment {
     private WebDriver driver;
 
     @BeforeTest
@@ -44,54 +44,31 @@ public class CAWStudioAssignment {
         // Click "Refresh Table" button
         driver.findElement(By.xpath("//button[.='Refresh Table']")).click();
 
-        // Create a list of expected data
-        List<Map<String, String>> expectedData = new ArrayList<>();
-        expectedData.add(createPerson("Bob", "20", "male"));
-        expectedData.add(createPerson("George", "42", "male"));
-        expectedData.add(createPerson("Sara", "42", "female"));
-        expectedData.add(createPerson("Conor", "40", "male"));
-        expectedData.add(createPerson("Jennifer", "42", "female"));
+        // Parse the JSON data
+        JsonArray jsonArray = JsonParser.parseString(jsonData).getAsJsonArray();
+
 
         // Find the table and its rows
         WebElement table = driver.findElement(By.id("dynamictable"));
         List<WebElement> rows = table.findElements(By.tagName("tr"));
 
-        // Iterate through rows and cells to compare with expected data
+        // Iterate through rows and cells to compare with JSON data
         for (int i = 1; i < rows.size(); i++) { // Skip the header row
             List<WebElement> cells = rows.get(i).findElements(By.tagName("td"));
 
-            for (int j = 0; j < cells.size(); j++) {
-                String cellText = cells.get(j).getText();
-                String expectedValue = expectedData.get(i - 1).get(getHeader(j));
-                Assert.assertEquals(cellText, expectedValue, "Data mismatch in row " + i + " and column " + j);
-            }
+            JsonObject rowData = jsonArray.get(i - 1).getAsJsonObject();
+            String name = rowData.get("name").getAsString();
+            String age = rowData.get("age").getAsString();
+            String gender = rowData.get("gender").getAsString();
+
+            Assert.assertEquals(cells.get(0).getText(), name, "Name mismatch in row " + i);
+            Assert.assertEquals(cells.get(1).getText(), age, "Age mismatch in row " + i);
+            Assert.assertEquals(cells.get(2).getText(), gender, "Gender mismatch in row " + i);
         }
     }
 
     @AfterTest
     public void teardown() {
         driver.quit();
-    }
-
-    private Map<String, String> createPerson(String name, String age, String gender) {
-        Map<String, String> person = new HashMap<>();
-        person.put("name", name);
-        person.put("age", age);
-        person.put("gender", gender);
-        return person;
-    }
-
-    private String getHeader(int columnIndex) {
-        // Map column indices to headers
-        switch (columnIndex) {
-            case 0:
-                return "name";
-            case 1:
-                return "age";
-            case 2:
-                return "gender";
-            default:
-                return "";
-        }
     }
 }
