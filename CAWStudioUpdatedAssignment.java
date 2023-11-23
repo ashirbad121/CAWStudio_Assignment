@@ -12,8 +12,10 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonStreamParser;
 
 public class CAWStudioUpdatedAssignment {
     private WebDriver driver;
@@ -39,15 +41,17 @@ public class CAWStudioUpdatedAssignment {
                 "{\"name\": \"Sara\", \"age\" : 42, \"gender\": \"female\"}, " +
                 "{\"name\": \"Conor\", \"age\" : 40, \"gender\": \"male\"}, " +
                 "{\"name\": \"Jennifer\", \"age\" : 42, \"gender\": \"female\"}]";
+        
         textField.sendKeys(jsonData);
 
         // Click "Refresh Table" button
         driver.findElement(By.xpath("//button[.='Refresh Table']")).click();
 
         // Parse the JSON data
+        
         JsonArray jsonArray = JsonParser.parseString(jsonData).getAsJsonArray();
         
-
+        
         // Find the table and its rows
         WebElement table = driver.findElement(By.id("dynamictable"));
         List<WebElement> rows = table.findElements(By.tagName("tr"));
@@ -55,7 +59,6 @@ public class CAWStudioUpdatedAssignment {
         // Iterate through rows and cells to compare with JSON data
         for (int i = 1; i < rows.size(); i++) { // Skip the header row
             List<WebElement> cells = rows.get(i).findElements(By.tagName("td"));
-
             JsonObject rowData = jsonArray.get(i - 1).getAsJsonObject();
             String name = rowData.get("name").getAsString();
             String age = rowData.get("age").getAsString();
